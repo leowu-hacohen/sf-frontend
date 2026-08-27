@@ -8,6 +8,7 @@ import DeleteContactButton from "@/components/contacts/DeleteContactButton";
 import { buttonClasses } from "@/components/ui/Button";
 import { getContact } from "@/lib/contacts/api";
 import { addressLine, formatTimestamp, jobLine } from "@/lib/contacts/format";
+import { ADDRESS_TYPES, type Address } from "@/lib/contacts/types";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -38,12 +39,40 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+function AddressGroup({
+  type,
+  addresses,
+}: {
+  type: string;
+  addresses: Address[];
+}) {
+  if (addresses.length === 0) return null;
+
+  return (
+    <div className="grid gap-2 px-4 py-3 sm:grid-cols-[10rem_1fr] sm:gap-4">
+      <dt className="self-start">
+        <span className="inline-flex rounded-full border border-border bg-secondary px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-secondary-foreground">
+          {type}
+        </span>
+      </dt>
+      <dd className="space-y-1.5">
+        {addresses.map((address) => (
+          <p key={address.id} className="break-words text-sm text-foreground">
+            {addressLine(address) ?? (
+              <span className="text-muted-foreground/50">—</span>
+            )}
+          </p>
+        ))}
+      </dd>
+    </div>
+  );
+}
+
 export default async function ContactDetailPage({ params }: PageProps) {
   const contact = await getContact(parseId((await params).id));
   if (!contact) notFound();
 
   const subtitle = jobLine(contact);
-  const address = addressLine(contact);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
@@ -102,13 +131,39 @@ export default async function ContactDetailPage({ params }: PageProps) {
         </Row>
         <Row label="Company">{contact.company}</Row>
         <Row label="Job title">{contact.job_title}</Row>
-        <Row label="Address">{address}</Row>
         <Row label="Notes">
           {contact.notes ? (
             <span className="whitespace-pre-wrap">{contact.notes}</span>
           ) : null}
         </Row>
       </dl>
+
+      <section className="rounded-lg border border-border bg-card">
+        <h2 className="border-b border-hairline px-4 py-3 font-display text-sm font-semibold text-foreground">
+          Addresses
+        </h2>
+        {contact.addresses.length === 0 ? (
+          <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">
+            No addresses yet.{" "}
+            <Link
+              href={`/contacts/${contact.id}/edit`}
+              className="text-primary hover:underline"
+            >
+              Add one
+            </Link>
+          </p>
+        ) : (
+          <div className="divide-y divide-hairline">
+            {ADDRESS_TYPES.map((type) => (
+              <AddressGroup
+                key={type}
+                type={type}
+                addresses={contact.addresses.filter((a) => a.type === type)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
 
       <dl className="rounded-lg border border-border bg-card/50 text-[13px]">
         <Row label="ID">

@@ -25,12 +25,8 @@ const INPUT: ContactInput = {
   company: null,
   job_title: null,
   photo_url: null,
-  address: null,
-  city: null,
-  state: null,
-  postal_code: null,
-  country: null,
   notes: null,
+  addresses: [],
 };
 
 describe("listContacts", () => {
@@ -164,5 +160,23 @@ describe("error translation", () => {
 
   it("returns nothing for a non-validation body", () => {
     expect(toFieldErrors(new ApiError(500, "boom"))).toEqual({});
+  });
+
+  it("collapses nested address issues onto the addresses field, called out by row", () => {
+    const error = new ApiError(
+      422,
+      JSON.stringify({
+        detail: [
+          { loc: ["body", "addresses", 0, "type"], msg: "Input should be 'home', 'work' or 'other'" },
+          { loc: ["body", "addresses", 1, "city"], msg: "String should have at most 120 characters" },
+        ],
+      }),
+    );
+
+    expect(toFieldErrors(error)).toEqual({
+      addresses:
+        "Address 1: Input should be 'home', 'work' or 'other'; " +
+        "Address 2: String should have at most 120 characters",
+    });
   });
 });
