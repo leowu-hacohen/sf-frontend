@@ -25,12 +25,8 @@ const INPUT: ContactInput = {
   company: null,
   job_title: null,
   photo_url: null,
-  address: null,
-  city: null,
-  state: null,
-  postal_code: null,
-  country: null,
   notes: null,
+  addresses: [],
 };
 
 describe("listContacts", () => {

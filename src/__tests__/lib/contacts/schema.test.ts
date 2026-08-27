@@ -1,6 +1,7 @@
 import {
   CONTACT_FIELDS,
   contactInputSchema,
+  formDataToAddressRows,
   formDataToValues,
   zodFieldErrors,
 } from "@/lib/contacts/schema";
@@ -98,5 +99,57 @@ describe("formDataToValues", () => {
     expect(Object.keys(extracted).sort()).toEqual(
       CONTACT_FIELDS.map((field) => field.name).sort(),
     );
+  });
+});
+
+
+describe("addresses", () => {
+  it("accepts typed address rows and nulls their blanks", () => {
+    const parsed = contactInputSchema.parse({
+      ...values(),
+      addresses: [{ type: "work", address: " 1 Market St ", city: "", state: "", postal_code: "", country: "" }],
+    });
+
+    expect(parsed.addresses).toEqual([
+      {
+        type: "work",
+        address: "1 Market St",
+        city: null,
+        state: null,
+        postal_code: null,
+        country: null,
+      },
+    ]);
+  });
+
+  it("rejects an unknown address type", () => {
+    const result = contactInputSchema.safeParse({
+      ...values(),
+      addresses: [{ type: "vacation" }],
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("formDataToAddressRows", () => {
+  it("rebuilds rows from indexed field names, tolerating gaps", () => {
+    const formData = new FormData();
+    formData.set("addresses[0][type]", "home");
+    formData.set("addresses[0][city]", "London");
+    // index 1 was removed client-side; index 2 survives
+    formData.set("addresses[2][type]", "work");
+    formData.set("addresses[2][city]", "San Francisco");
+
+    const rows = formDataToAddressRows(formData);
+
+    expect(rows).toHaveLength(2);
+    expect(rows[0].type).toBe("home");
+    expect(rows[0].city).toBe("London");
+    expect(rows[1].type).toBe("work");
+    expect(rows[1].city).toBe("San Francisco");
+  });
+
+  it("returns an empty list when no address inputs are present", () => {
+    expect(formDataToAddressRows(new FormData())).toEqual([]);
   });
 });
