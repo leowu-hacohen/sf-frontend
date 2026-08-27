@@ -75,13 +75,27 @@ describe("contactInputSchema", () => {
 
   it("enforces the API's length limits", () => {
     const result = contactInputSchema.safeParse(
-      values({ first_name: "a".repeat(101), postal_code: "9".repeat(21) }),
+      values({ first_name: "a".repeat(101) }),
     );
 
     expect(zodFieldErrors(result.error!)).toEqual({
       first_name: "First name must be 100 characters or fewer",
-      postal_code: "Postal code must be 20 characters or fewer",
     });
+  });
+
+  it("enforces per-row length limits on addresses", () => {
+    const result = contactInputSchema.safeParse({
+      ...values(),
+      addresses: [
+        { type: "home", address: "", city: "", state: "", postal_code: "9".repeat(21), country: "" },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error!.issues[0].path).toEqual(["addresses", 0, "postal_code"]);
+    expect(result.error!.issues[0].message).toBe(
+      "Postal code must be 20 characters or fewer",
+    );
   });
 });
 
@@ -102,6 +116,17 @@ describe("formDataToValues", () => {
   });
 });
 
+
+describe("contactInputSchema", () => {
+  it("does not resurrect the old flat address fields", () => {
+    const parsed = contactInputSchema.parse(values());
+    expect(parsed).not.toHaveProperty("address");
+    expect(parsed).not.toHaveProperty("city");
+    expect(parsed).not.toHaveProperty("state");
+    expect(parsed).not.toHaveProperty("postal_code");
+    expect(parsed).not.toHaveProperty("country");
+  });
+});
 
 describe("addresses", () => {
   it("accepts typed address rows and nulls their blanks", () => {

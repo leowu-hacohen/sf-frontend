@@ -55,11 +55,6 @@ export const contactInputSchema = z.object({
     (value) => value === null || /^https?:\/\//.test(value),
     "Photo URL must start with http:// or https://",
   ),
-  address: optionalText(300, "Address"),
-  city: optionalText(120, "City"),
-  state: optionalText(120, "State"),
-  postal_code: optionalText(20, "Postal code"),
-  country: optionalText(120, "Country"),
   notes: z
     .string()
     .trim()
