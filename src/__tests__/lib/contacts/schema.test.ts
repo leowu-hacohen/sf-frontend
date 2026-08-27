@@ -19,6 +19,7 @@ function values(overrides: Record<string, string> = {}) {
     postal_code: "",
     country: "",
     notes: "",
+    photo_url: "",
     ...overrides,
   };
 }
@@ -30,6 +31,21 @@ describe("contactInputSchema", () => {
     expect(parsed.email).toBe("ada@example.com");
     expect(parsed.phone).toBeNull();
     expect(parsed.notes).toBeNull();
+  });
+
+  it("accepts an http(s) photo URL and nulls a blank one", () => {
+    const photo = "https://i.pravatar.cc/150?img=47";
+    expect(contactInputSchema.parse(values({ photo_url: photo })).photo_url).toBe(
+      photo,
+    );
+    expect(contactInputSchema.parse(values()).photo_url).toBeNull();
+  });
+
+  it("rejects a photo URL that is not http(s)", () => {
+    const result = contactInputSchema.safeParse(
+      values({ photo_url: "javascript:alert(1)" }),
+    );
+    expect(result.success).toBe(false);
   });
 
   it("trims what the user typed", () => {
