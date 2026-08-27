@@ -50,3 +50,14 @@ export function buildVCard(contact: Contact): string {
   lines.push("END:VCARD");
   return lines.join("\r\n");
 }
+
+/**
+ * The QR service documents ~900 characters as the payload size that generally
+ * stays scannable; measured in UTF-8 bytes so multibyte fields do not sneak a
+ * denser code past the check.
+ */
+const MAX_SCANNABLE_VCARD_BYTES = 900;
+
+export function fitsInScannableQr(vcard: string): boolean {
+  return new TextEncoder().encode(vcard).length <= MAX_SCANNABLE_VCARD_BYTES;
+}

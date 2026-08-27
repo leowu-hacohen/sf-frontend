@@ -1,4 +1,4 @@
-import { buildVCard } from "@/lib/contacts/vcard";
+import { buildVCard, fitsInScannableQr } from "@/lib/contacts/vcard";
 import type { Contact } from "@/lib/contacts/types";
 
 function contact(overrides: Partial<Contact> = {}): Contact {
@@ -66,6 +66,14 @@ describe("buildVCard", () => {
     const card = buildVCard(contact({ notes: "n".repeat(10_000) }));
     expect(card).not.toContain("NOTE");
     expect(card.length).toBeLessThan(300);
+  });
+
+  it("gates scannability on UTF-8 bytes, not code units", () => {
+    expect(fitsInScannableQr("a".repeat(900))).toBe(true);
+    expect(fitsInScannableQr("a".repeat(901))).toBe(false);
+    // 300 three-byte CJK characters: 300 code units but 900 bytes.
+    expect(fitsInScannableQr("联".repeat(300))).toBe(true);
+    expect(fitsInScannableQr("联".repeat(301))).toBe(false);
   });
 
   it("normalizes CRLF and lone CR to the \\n escape", () => {

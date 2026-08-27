@@ -9,7 +9,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import { getContact } from "@/lib/contacts/api";
 import { addressLine, formatTimestamp, jobLine } from "@/lib/contacts/format";
 import { ADDRESS_TYPES, type Address, type Contact } from "@/lib/contacts/types";
-import { buildVCard } from "@/lib/contacts/vcard";
+import { buildVCard, fitsInScannableQr } from "@/lib/contacts/vcard";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -69,9 +69,6 @@ function AddressGroup({
   );
 }
 
-/** Past this size a QR of the card gets too dense to scan reliably. */
-const MAX_SCANNABLE_VCARD_CHARS = 1000;
-
 function ScanToSave({ contact }: { contact: Contact }) {
   const vcard = buildVCard(contact);
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=176x176&margin=1&data=${encodeURIComponent(vcard)}`;
@@ -82,7 +79,7 @@ function ScanToSave({ contact }: { contact: Contact }) {
         Scan to save
       </h2>
       <div className="flex flex-wrap items-center gap-4 px-4 py-4">
-        {vcard.length <= MAX_SCANNABLE_VCARD_CHARS ? (
+        {fitsInScannableQr(vcard) ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- remote QR service, host can't be preconfigured for next/image */}
             <img
