@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Search, X } from "lucide-react";
+import { ChevronDown, Loader2, Search, X } from "lucide-react";
 import { contactsHref, type ContactListQuery } from "@/lib/contacts/query";
 import { PER_PAGE_OPTIONS } from "@/lib/contacts/types";
 
@@ -87,28 +87,35 @@ export default function ContactsToolbar({ query }: { query: ContactListQuery }) 
 
       <label className="flex items-center gap-2 text-[13px] text-muted-foreground">
         Per page
-        <select
-          value={query.perPage}
-          aria-label="Contacts per page"
-          onChange={(event) =>
-            startTransition(() => {
-              router.replace(
-                contactsHref(query, {
-                  perPage: Number(event.target.value),
-                  page: 1,
-                }),
-                { scroll: false },
-              );
-            })
-          }
-          className="h-9 rounded-md border border-border bg-input px-2 text-sm text-foreground focus:border-primary"
-        >
-          {PER_PAGE_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+        <span className="relative">
+          <select
+            value={query.perPage}
+            aria-label="Contacts per page"
+            onChange={(event) =>
+              startTransition(() => {
+                router.replace(
+                  contactsHref(query, {
+                    perPage: Number(event.target.value),
+                    page: 1,
+                  }),
+                  { scroll: false },
+                );
+              })
+            }
+            className="h-9 appearance-none rounded-md border border-border bg-input pl-3 pr-8 text-sm tabular-nums text-foreground focus:border-primary"
+          >
+            {PER_PAGE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            strokeWidth={1.75}
+            aria-hidden="true"
+          />
+        </span>
       </label>
     </div>
   );

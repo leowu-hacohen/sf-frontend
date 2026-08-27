@@ -3,6 +3,7 @@ import type { Address, Contact } from "@/lib/contacts/types";
 /** Escape a value per RFC 2426: backslash, newline, comma, and semicolon. */
 function esc(value: string): string {
   return value
+    .replace(/\r\n?/g, "\n")
     .replace(/\\/g, "\\\\")
     .replace(/\n/g, "\\n")
     .replace(/,/g, "\\,")
@@ -29,8 +30,10 @@ function adrLine(address: Address): string {
 
 /**
  * Build a vCard 3.0 for a contact so a phone camera can save it from a QR
- * code. The photo is left out on purpose: base64 images push the payload far
- * past what a scannable QR can hold.
+ * code. Photo and notes are left out on purpose: a base64 image pushes the
+ * payload far past what a scannable QR can hold, and notes can legally run to
+ * 10,000 characters while also being the field least worth disclosing to the
+ * QR-rendering service.
  */
 export function buildVCard(contact: Contact): string {
   const lines = [
@@ -44,7 +47,17 @@ export function buildVCard(contact: Contact): string {
   if (contact.company) lines.push(`ORG:${esc(contact.company)}`);
   if (contact.job_title) lines.push(`TITLE:${esc(contact.job_title)}`);
   for (const address of contact.addresses) lines.push(adrLine(address));
-  if (contact.notes) lines.push(`NOTE:${esc(contact.notes)}`);
   lines.push("END:VCARD");
   return lines.join("\r\n");
+}
+
+/**
+ * The QR service documents ~900 characters as the payload size that generally
+ * stays scannable; measured in UTF-8 bytes so multibyte fields do not sneak a
+ * denser code past the check.
+ */
+const MAX_SCANNABLE_VCARD_BYTES = 900;
+
+export function fitsInScannableQr(vcard: string): boolean {
+  return new TextEncoder().encode(vcard).length <= MAX_SCANNABLE_VCARD_BYTES;
 }

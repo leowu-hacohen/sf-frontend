@@ -16,7 +16,7 @@ export default function ApiStatusBadge({
       className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[11px] text-muted-foreground"
       title={
         ok
-          ? `API healthy · ${health?.database} · ${health?.contacts} stored`
+          ? `API healthy, ${health?.database}, ${health?.contacts} stored`
           : "The Contacts API did not respond to its health check"
       }
     >
@@ -24,9 +24,7 @@ export default function ApiStatusBadge({
         aria-hidden="true"
         className={`h-1.5 w-1.5 rounded-full ${ok ? "bg-success" : "bg-destructive"}`}
       />
-      <span className="font-mono">
-        {ok ? `api ok · ${health?.database}` : "api unreachable"}
-      </span>
+      <span className="font-mono">{ok ? "api ok" : "api unreachable"}</span>
     </span>
   );
 }

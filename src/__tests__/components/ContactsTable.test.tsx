@@ -49,7 +49,7 @@ describe("ContactsTable", () => {
     );
   });
 
-  it("shows a dash where an optional field is empty", () => {
+  it("shows a placeholder where an optional field is empty", () => {
     render(
       <ContactsTable
         contacts={[{ ...CONTACTS[0], phone: null, company: null }]}
@@ -57,7 +57,7 @@ describe("ContactsTable", () => {
       />,
     );
 
-    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("None").length).toBeGreaterThan(0);
   });
 });
 

@@ -78,20 +78,20 @@ export default function ContactsTable({
                   </a>
                 </td>
 
-                <td className="hidden whitespace-nowrap px-4 py-2.5 text-muted-foreground sm:table-cell">
+                <td className="hidden whitespace-nowrap px-4 py-2.5 tabular-nums text-muted-foreground sm:table-cell">
                   {contact.phone ? (
                     <a href={`tel:${contact.phone}`} className="hover:text-primary">
                       {contact.phone}
                     </a>
                   ) : (
-                    <span className="text-muted-foreground/50">—</span>
+                    <span className="text-muted-foreground/50">None</span>
                   )}
                 </td>
 
                 <td className="hidden max-w-[14rem] px-4 py-2.5 text-muted-foreground lg:table-cell">
                   <span className="block truncate">
                     {contact.company ?? (
-                      <span className="text-muted-foreground/50">—</span>
+                      <span className="text-muted-foreground/50">None</span>
                     )}
                   </span>
                 </td>
