@@ -34,7 +34,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
     <div className="grid gap-1 border-b border-hairline px-4 py-3 last:border-b-0 sm:grid-cols-[10rem_1fr] sm:gap-4">
       <dt className="text-[13px] text-muted-foreground">{label}</dt>
       <dd className="break-words text-sm text-foreground">
-        {children ?? <span className="text-muted-foreground/50">—</span>}
+        {children ?? <span className="text-muted-foreground/50">None</span>}
       </dd>
     </div>
   );
@@ -60,7 +60,7 @@ function AddressGroup({
         {addresses.map((address) => (
           <p key={address.id} className="break-words text-sm text-foreground">
             {addressLine(address) ?? (
-              <span className="text-muted-foreground/50">—</span>
+              <span className="text-muted-foreground/50">None</span>
             )}
           </p>
         ))}
@@ -69,8 +69,12 @@ function AddressGroup({
   );
 }
 
+/** Past this size a QR of the card gets too dense to scan reliably. */
+const MAX_SCANNABLE_VCARD_CHARS = 1000;
+
 function ScanToSave({ contact }: { contact: Contact }) {
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=176x176&margin=1&data=${encodeURIComponent(buildVCard(contact))}`;
+  const vcard = buildVCard(contact);
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=176x176&margin=1&data=${encodeURIComponent(vcard)}`;
 
   return (
     <section className="rounded-lg border border-border bg-card">
@@ -78,19 +82,27 @@ function ScanToSave({ contact }: { contact: Contact }) {
         Scan to save
       </h2>
       <div className="flex flex-wrap items-center gap-4 px-4 py-4">
-        {/* eslint-disable-next-line @next/next/no-img-element -- remote QR service, host can't be preconfigured for next/image */}
-        <img
-          src={qrSrc}
-          alt={`QR code with ${contact.full_name}'s contact card`}
-          width={176}
-          height={176}
-          loading="lazy"
-          className="rounded-md border border-border bg-white p-2"
-        />
-        <p className="max-w-[16rem] text-[13px] text-muted-foreground">
-          Point a phone camera here to add {contact.first_name} straight to its
-          contacts, addresses included.
-        </p>
+        {vcard.length <= MAX_SCANNABLE_VCARD_CHARS ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote QR service, host can't be preconfigured for next/image */}
+            <img
+              src={qrSrc}
+              alt={`QR code with ${contact.full_name}'s contact card`}
+              width={176}
+              height={176}
+              loading="lazy"
+              className="rounded-md border border-border bg-white p-2"
+            />
+            <p className="max-w-[16rem] text-[13px] text-muted-foreground">
+              Point a phone camera here to add {contact.first_name} straight to
+              its contacts, addresses included.
+            </p>
+          </>
+        ) : (
+          <p className="text-[13px] text-muted-foreground">
+            This contact holds too much data for a scannable code.
+          </p>
+        )}
       </div>
     </section>
   );

@@ -61,4 +61,16 @@ describe("buildVCard", () => {
     expect(card).not.toContain("ORG");
     expect(card).not.toContain("TITLE");
   });
+
+  it("never includes notes, which are oversized and private", () => {
+    const card = buildVCard(contact({ notes: "n".repeat(10_000) }));
+    expect(card).not.toContain("NOTE");
+    expect(card.length).toBeLessThan(300);
+  });
+
+  it("normalizes CRLF and lone CR to the \\n escape", () => {
+    const card = buildVCard(contact({ company: "Line one\r\nLine two\rEnd" }));
+    expect(card).toContain("ORG:Line one\\nLine two\\nEnd");
+    expect(card).not.toMatch(/\rEnd/);
+  });
 });
