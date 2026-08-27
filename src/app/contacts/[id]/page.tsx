@@ -8,7 +8,8 @@ import DeleteContactButton from "@/components/contacts/DeleteContactButton";
 import { buttonClasses } from "@/components/ui/Button";
 import { getContact } from "@/lib/contacts/api";
 import { addressLine, formatTimestamp, jobLine } from "@/lib/contacts/format";
-import { ADDRESS_TYPES, type Address } from "@/lib/contacts/types";
+import { ADDRESS_TYPES, type Address, type Contact } from "@/lib/contacts/types";
+import { buildVCard } from "@/lib/contacts/vcard";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -65,6 +66,33 @@ function AddressGroup({
         ))}
       </dd>
     </div>
+  );
+}
+
+function ScanToSave({ contact }: { contact: Contact }) {
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=176x176&margin=1&data=${encodeURIComponent(buildVCard(contact))}`;
+
+  return (
+    <section className="rounded-lg border border-border bg-card">
+      <h2 className="border-b border-hairline px-4 py-3 font-display text-sm font-semibold text-foreground">
+        Scan to save
+      </h2>
+      <div className="flex flex-wrap items-center gap-4 px-4 py-4">
+        {/* eslint-disable-next-line @next/next/no-img-element -- remote QR service, host can't be preconfigured for next/image */}
+        <img
+          src={qrSrc}
+          alt={`QR code with ${contact.full_name}'s contact card`}
+          width={176}
+          height={176}
+          loading="lazy"
+          className="rounded-md border border-border bg-white p-2"
+        />
+        <p className="max-w-[16rem] text-[13px] text-muted-foreground">
+          Point a phone camera here to add {contact.first_name} straight to its
+          contacts, addresses included.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -164,6 +192,8 @@ export default async function ContactDetailPage({ params }: PageProps) {
           </div>
         )}
       </section>
+
+      <ScanToSave contact={contact} />
 
       <dl className="rounded-lg border border-border bg-card/50 text-[13px]">
         <Row label="ID">
