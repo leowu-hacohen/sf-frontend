@@ -21,8 +21,10 @@ export default function ContactAvatar({
   contact: Pick<Contact, "first_name" | "last_name" | "email" | "photo_url">;
   size?: keyof typeof SIZES;
 }) {
-  const [photoFailed, setPhotoFailed] = useState(false);
-  const showPhoto = contact.photo_url && !photoFailed;
+  // Remember which URL failed rather than a boolean, so a contact whose
+  // photo_url changes after a failure gets its new photo attempted.
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const showPhoto = contact.photo_url && contact.photo_url !== failedUrl;
 
   const style = {
     "--avatar-hue": avatarHue(contact.email),
@@ -43,7 +45,7 @@ export default function ContactAvatar({
           loading="lazy"
           referrerPolicy="no-referrer"
           className="h-full w-full object-cover"
-          onError={() => setPhotoFailed(true)}
+          onError={() => setFailedUrl(contact.photo_url)}
         />
       ) : (
         initials(contact)

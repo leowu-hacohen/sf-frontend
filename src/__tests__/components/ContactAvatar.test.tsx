@@ -35,4 +35,25 @@ describe("ContactAvatar", () => {
     expect(container).toHaveTextContent("AL");
     expect(container.querySelector("img")).not.toBeInTheDocument();
   });
+
+  it("retries when the contact gets a new photo URL after a failure", () => {
+    const { container, rerender } = render(
+      <ContactAvatar
+        contact={makeContact({ photo_url: "https://example.com/broken.png" })}
+      />,
+    );
+    fireEvent.error(container.querySelector("img")!);
+    expect(container.querySelector("img")).not.toBeInTheDocument();
+
+    rerender(
+      <ContactAvatar
+        contact={makeContact({ photo_url: "https://example.com/fixed.png" })}
+      />,
+    );
+
+    expect(container.querySelector("img")).toHaveAttribute(
+      "src",
+      "https://example.com/fixed.png",
+    );
+  });
 });
